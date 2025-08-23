@@ -1,0 +1,50 @@
+name: Build APK
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:   # permet de lancer manuellement
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4   # version mise à jour
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: Install system dependencies
+        run: |
+          sudo apt update
+          sudo apt install -y \
+            build-essential git zip unzip openjdk-17-jdk \
+            python3-pip python3-setuptools python3-wheel \
+            libffi-dev libssl-dev libsqlite3-dev libjpeg-dev libpng-dev \
+            libfreetype6-dev pkg-config zlib1g-dev libgl1-mesa-dev \
+            libgles2-mesa-dev libx11-dev libxcursor-dev libxrandr-dev \
+            libxinerama-dev libxi-dev libxxf86vm-dev
+
+      - name: Install Buildozer
+        run: pip install --upgrade pip
+        run: pip install buildozer cython
+
+      - name: Initialize Buildozer
+        run: |
+          if [ ! -f buildozer.spec ]; then
+            buildozer init
+          fi
+
+      - name: Build APK
+        run: buildozer android debug
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4   # version mise à jour
+        with:
+          name: MonAPK
+          path: bin/*.apk
