@@ -1,44 +1,55 @@
-name: Build APK
+name: Android CI
 
 on:
-  workflow_dispatch:
   push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
     env:
-      ANDROID_HOME: ${{ github.workspace }}/android-sdk
       ANDROID_SDK_ROOT: ${{ github.workspace }}/android-sdk
 
     steps:
+      # 1. Checkout du code
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Set up JDK
-        uses: actions/setup-java@v4
+      # 2. Installer Java (nécessaire pour Gradle)
+      - name: Setup Java
+        uses: actions/setup-java@v3
         with:
-          java-version: "17"
-          distribution: "temurin"
+          distribution: temurin
+          java-version: 17
 
+      # 3. Installer SDK Android
       - name: Install Android SDK
         run: |
           mkdir -p $ANDROID_SDK_ROOT/cmdline-tools
           cd $ANDROID_SDK_ROOT/cmdline-tools
-          wget https://dl.google.com/android/repository/commandlinetools-linux-9477386_latest.zip -O sdk-tools.zip
-          unzip -q sdk-tools.zip -d latest
-          rm sdk-tools.zip
-          echo "$ANDROID_SDK_ROOT/cmdline-tools/latest/bin" >> $GITHUB_PATH
-          echo "$ANDROID_SDK_ROOT/platform-tools" >> $GITHUB_PATH
+          curl -o commandlinetools.zip https://dl.google.com/android/repository/commandlinetools-linux-9123335_latest.zip
+          unzip commandlinetools.zip
+          rm commandlinetools.zip
+          mkdir -p latest
+          mv cmdline-tools/* latest/
+          export PATH=$ANDROID_SDK_ROOT/cmdline-tools/latest/bin:$PATH
           yes | sdkmanager --licenses
-          yes | sdkmanager "platform-tools" "platforms;android-34" "build-tools;34.0.0"
+          sdkmanager "platform-tools" "platforms;android-33" "build-tools;33.0.2"
 
+      # 4. Rendre gradlew exécutable
+      - name: Make gradlew executable
+        run: chmod +x ./gradlew
+
+      # 5. Étape de débogage : vérifier fichiers
+      - name: List workspace files
+        run: ls -la
+
+      # 6. Build APK
       - name: Build with Gradle
         run: ./gradlew assembleDebug
-
-      - name: Upload APK
-        uses: actions/upload-artifact@v4
-        with:
-          name: app-debug.apk
-          path: app/build/outputs/apk/debug/app-debug.apk
