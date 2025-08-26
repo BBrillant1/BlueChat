@@ -2,56 +2,48 @@ name: Android CI
 
 on:
   push:
-    branches:
-      - main
+    branches: [main]
   pull_request:
-    branches:
-      - main
-  workflow_dispatch:
+    branches: [main]
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
-    env:
-      ANDROID_SDK_ROOT: ${{ github.workspace }}/android-sdk
-
     steps:
-      # 1. Checkout du code
-      - name: Checkout code
-        uses: actions/checkout@v4
+    - name: Checkout code
+      uses: actions/checkout@v4
 
-      # 2. Installer Java (nécessaire pour Gradle)
-      - name: Setup Java
-        uses: actions/setup-java@v3
-        with:
-          distribution: temurin
-          java-version: 17
+    - name: Set up JDK 17
+      uses: actions/setup-java@v3
+      with:
+        distribution: 'temurin'
+        java-version: '17'
 
-      # 3. Installer SDK Android
-      - name: Install Android SDK
-        run: |
-          mkdir -p $ANDROID_SDK_ROOT/cmdline-tools
-          cd $ANDROID_SDK_ROOT/cmdline-tools
-          curl -o commandlinetools.zip https://dl.google.com/android/repository/commandlinetools-linux-9123335_latest.zip
-          unzip commandlinetools.zip
-          rm commandlinetools.zip
-          mkdir -p latest
-          mv cmdline-tools/* latest/
-          export PATH=$ANDROID_SDK_ROOT/cmdline-tools/latest/bin:$PATH
-          yes | sdkmanager --licenses
-          sdkmanager "platform-tools" "platforms;android-33" "build-tools;33.0.2" "build-tools;34.0.0"
+    - name: Install Android SDK tools
+      uses: android-actions/setup-android@v3
+      with:
+        api-level: 34
+        build-tools-version: 34.0.0
+        ndk: false
 
-      - name: Install dependencies
-        run: |
-         sudo apt-get update
-         sudo apt-get install -y python3-pip python3-setuptools python3-wheel python3-venv git zip unzip openjdk-17-jdk
-         pip install buildozer
-         pip install cython
+    - name: Accept SDK licenses
+      run: yes | sdkmanager --licenses
 
-      # 5. Étape de débogage : vérifier fichiers
-      - name: List workspace files
-        run: ls -la
+    - name: Install platform-tools and build-tools
+      run: |
+        sdkmanager "platform-tools" "build-tools;34.0.0"
 
-      - name: Build APK with Buildozer
-        run: buildozer android debug
+    - name: Set ANDROID_HOME
+      run: echo "ANDROID_HOME=$HOME/android-sdk" >> $GITHUB_ENV
+
+    - name: Build with Buildozer
+      run: |
+        pip install buildozer
+        buildozer android debug
+
+    # Ajoutez ici des étapes de test si nécessaire
+    # - name: Run tests
+    #   run: ./gradlew test
+
+    # Ajoutez ici des étapes de déploiement si besoin
