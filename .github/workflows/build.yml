@@ -20,6 +20,9 @@ jobs:
         distribution: 'temurin'
         java-version: '17'
 
+    - name: Install Cython
+      run: pip install cython
+
     - name: Install Android SDK tools
       uses: android-actions/setup-android@v3
       with:
