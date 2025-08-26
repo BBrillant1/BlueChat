@@ -17,29 +17,16 @@ jobs:
       ANDROID_SDK_ROOT: $HOME/android-sdk
       ANDROID_NDK_HOME: $HOME/android-sdk/ndk/25.2.9519653
       JAVA_HOME: /usr/lib/jvm/java-11-openjdk-amd64
-      PATH: $HOME/android-sdk/cmdline-tools/cmdline-tools-latest/bin:$HOME/android-sdk/platform-tools:/usr/lib/jvm/java-11-openjdk-amd64/bin:$PATH
+      PATH: $HOME/android-sdk/cmdline-tools/latest/bin:$HOME/android-sdk/platform-tools:$JAVA_HOME/bin:$PATH
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: Install system dependencies
+      - name: Install essential system tools
         run: |
           sudo apt-get update
-          sudo apt-get install -y python3-pip git build-essential autoconf automake libtool pkg-config zlib1g-dev libssl-dev libncurses5-dev libffi-dev libsqlite3-dev openjdk-11-jdk cython3
-
-      - name: Install Android SDK, NDK, and platform-tools
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y openjdk-11-jdk wget unzip
-          export JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64
-          export PATH=$JAVA_HOME/bin:$PATH
-          mkdir -p $HOME/android-sdk/cmdline-tools
-          cd $HOME/android-sdk/cmdline-tools
-          wget https://dl.google.com/android/repository/commandlinetools-linux-9477386_latest.zip -O cmdline-tools.zip
-          unzip cmdline-tools.zip
-          mv cmdline-tools cmdline-tools-latest
-          yes | $HOME/android-sdk/cmdline-tools/cmdline-tools-latest/bin/sdkmanager --sdk_root=$HOME/android-sdk "platform-tools" "platforms;android-33" "ndk;25.2.9519653"
+          sudo apt-get install -y tar unzip wget git openjdk-11-jdk python3-pip build-essential
 
       - name: Set up Python
         uses: actions/setup-python@v4
@@ -50,6 +37,15 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install kivy pyjnius cryptography plyer buildozer cython
+
+      - name: Install Android SDK, NDK, and platform-tools
+        run: |
+          mkdir -p $HOME/android-sdk/cmdline-tools
+          cd $HOME/android-sdk/cmdline-tools
+          wget https://dl.google.com/android/repository/commandlinetools-linux-9477386_latest.zip -O cmdline-tools.zip
+          unzip cmdline-tools.zip
+          mv cmdline-tools cmdline-tools-latest
+          yes | $HOME/android-sdk/cmdline-tools/latest/bin/sdkmanager --sdk_root=$HOME/android-sdk "platform-tools" "platforms;android-33" "ndk;25.2.9519653"
 
       - name: Ensure assets folder exists
         run: |
