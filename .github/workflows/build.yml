@@ -40,7 +40,7 @@ jobs:
           mv cmdline-tools/* latest/
           export PATH=$ANDROID_SDK_ROOT/cmdline-tools/latest/bin:$PATH
           yes | sdkmanager --licenses
-          sdkmanager "platform-tools" "platforms;android-33" "build-tools;33.0.2"
+          sdkmanager "platform-tools" "platforms;android-33" "build-tools;33.0.2" "build-tools;34.0.0"
 
       - name: Install dependencies
         run: |
