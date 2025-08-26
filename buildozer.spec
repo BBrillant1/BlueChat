@@ -12,4 +12,4 @@ icon.filename = assets/avatar.png
 log_level = 2
 warn_on_root = 1
 android.release = 1
-android.arch = armeabi-v7a
+android.archs = arm64-v8a
