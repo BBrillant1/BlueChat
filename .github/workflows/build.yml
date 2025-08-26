@@ -23,44 +23,32 @@ jobs:
     - name: Install Cython
       run: pip install cython
 
+    - name: Install Buildozer
+      run: pip install buildozer
+
+    - name: Initialize Buildozer
+      run: buildozer android clean
+
     - name: Install Android SDK Build Tools
       run: |
-        sudo apt-get update
-        sudo apt-get install -y wget unzip
-        wget https://dl.google.com/android/repository/commandlinetools-linux-9477386_latest.zip -O cmdline-tools.zip
-        unzip cmdline-tools.zip
-        mkdir -p $HOME/android-sdk/cmdline-tools/latest
-        mv cmdline-tools/* $HOME/android-sdk/cmdline-tools/latest/
-        export ANDROID_SDK_ROOT=$HOME/android-sdk
-        export PATH=$PATH:$ANDROID_SDK_ROOT/cmdline-tools/latest/bin
-        yes | sdkmanager --sdk_root=$ANDROID_SDK_ROOT "platform-tools" "platforms;android-33" "build-tools;34.0.0"
-
-    - name: Set environment variables
-      run: |
-        echo "ANDROID_SDK_ROOT=$HOME/android-sdk" >> $GITHUB_ENV
-        echo "PATH=$PATH:$HOME/android-sdk/cmdline-tools/latest/bin" >> $GITHUB_ENV
-
-    - name: Install Android SDK tools
-      uses: android-actions/setup-android@v3
-      with:
-        api-level: 34
-        build-tools-version: 34.0.0
-        ndk: false
+        mkdir -p $HOME/.buildozer/android/platform/android-sdk/cmdline-tools/latest
+        # Ici, tu peux ajouter le téléchargement des cmdline-tools si besoin
 
     - name: Accept SDK licenses
-      run: yes | sdkmanager --licenses
+      run: |
+        $HOME/.buildozer/android/platform/android-sdk/cmdline-tools/latest/bin/sdkmanager --licenses
 
     - name: Install platform-tools and build-tools
       run: |
-        sdkmanager "platform-tools" "build-tools;34.0.0"
+        $HOME/.buildozer/android/platform/android-sdk/cmdline-tools/latest/bin/sdkmanager "platform-tools" "build-tools;34.0.0" "platforms;android-33"
 
-    - name: Set ANDROID_HOME
-      run: echo "ANDROID_HOME=$HOME/android-sdk" >> $GITHUB_ENV
+    - name: Set environment variables
+      run: |
+        echo "ANDROID_SDK_ROOT=$HOME/.buildozer/android/platform/android-sdk" >> $GITHUB_ENV
+        echo "PATH=$PATH:$HOME/.buildozer/android/platform/android-sdk/cmdline-tools/latest/bin" >> $GITHUB_ENV
 
     - name: Build with Buildozer
-      run: |
-        pip install buildozer
-        buildozer android debug
+      run: buildozer android debug
 
     # Ajoutez ici des étapes de test si nécessaire
     # - name: Run tests
