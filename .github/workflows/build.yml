@@ -22,16 +22,16 @@ jobs:
     steps:
       - name: Ensure tar is installed
         run: |
-          apt-get update
-          apt-get install -y tar
+          sudo apt-get update
+          sudo apt-get install -y tar
 
       - name: Checkout repository
         uses: actions/checkout@v3
 
       - name: Install system dependencies
         run: |
-          apt-get update
-          apt-get install -y unzip wget git openjdk-11-jdk python3-pip build-essential
+          sudo apt-get update
+          sudo apt-get install -y unzip wget git openjdk-11-jdk python3-pip build-essential
 
       - name: Install Android SDK, NDK, and platform-tools
         run: |
