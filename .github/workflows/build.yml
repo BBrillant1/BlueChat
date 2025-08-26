@@ -42,16 +42,16 @@ jobs:
           yes | sdkmanager --licenses
           sdkmanager "platform-tools" "platforms;android-33" "build-tools;33.0.2"
 
-- name: Install dependencies
-  run: |
-    sudo apt-get update
-    sudo apt-get install -y python3-pip python3-setuptools python3-wheel python3-venv git zip unzip openjdk-17-jdk
-    pip install buildozer
-    pip install cython
+      - name: Install dependencies
+        run: |
+         sudo apt-get update
+         sudo apt-get install -y python3-pip python3-setuptools python3-wheel python3-venv git zip unzip openjdk-17-jdk
+         pip install buildozer
+         pip install cython
 
       # 5. Étape de débogage : vérifier fichiers
       - name: List workspace files
         run: ls -la
 
-- name: Build APK with Buildozer
-  run: buildozer android debug
+      - name: Build APK with Buildozer
+        run: buildozer android debug
