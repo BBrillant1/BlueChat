@@ -1,57 +1,48 @@
-name: Android CI
+name: Build Kivy Android App
 
 on:
   push:
-    branches: [main]
-  pull_request:
-    branches: [main]
+    branches:
+      - main
+  workflow_dispatch:
 
 jobs:
-  build:
+  build-android:
     runs-on: ubuntu-latest
 
+    env:
+      PROJECT_DIR: ${{ github.workspace }}
+      BUILD_DIR: ${{ github.workspace }}/bin
+
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v3
 
-    - name: Set up JDK 17
-      uses: actions/setup-java@v3
-      with:
-        distribution: 'temurin'
-        java-version: '17'
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.11"
 
-    - name: Install Cython
-      run: pip install cython
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install kivy pyjnius cryptography plyer buildozer
 
-    - name: Install Buildozer
-      run: pip install buildozer
+      - name: Ensure assets folder exists
+        run: |
+          mkdir -p assets
+          if [ -d assets_source ]; then
+            cp -r assets_source/* assets/
+          fi
 
-    - name: Initialize Buildozer
-      run: buildozer android clean
+      - name: Create output folder
+        run: mkdir -p bin
 
-    - name: Install Android SDK Build Tools
-      run: |
-        mkdir -p $HOME/.buildozer/android/platform/android-sdk/cmdline-tools/latest
-        # Ici, tu peux ajouter le téléchargement des cmdline-tools si besoin
+      - name: Build APK (debug)
+        run: buildozer android debug deploy run
 
-    - name: Accept SDK licenses
-      run: |
-        $HOME/.buildozer/android/platform/android-sdk/cmdline-tools/latest/bin/sdkmanager --licenses
+      - name: Build APK (release)
+        run: buildozer android release
 
-    - name: Install platform-tools and build-tools
-      run: |
-        $HOME/.buildozer/android/platform/android-sdk/cmdline-tools/latest/bin/sdkmanager "platform-tools" "build-tools;34.0.0" "platforms;android-33"
-
-    - name: Set environment variables
-      run: |
-        echo "ANDROID_SDK_ROOT=$HOME/.buildozer/android/platform/android-sdk" >> $GITHUB_ENV
-        echo "PATH=$PATH:$HOME/.buildozer/android/platform/android-sdk/cmdline-tools/latest/bin" >> $GITHUB_ENV
-
-    - name: Build with Buildozer
-      run: buildozer android debug
-
-    # Ajoutez ici des étapes de test si nécessaire
-    # - name: Run tests
-    #   run: ./gradlew test
-
-    # Ajoutez ici des étapes de déploiement si besoin
+      - name: List APK output
+        run: ls -lh bin/
