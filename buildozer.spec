@@ -13,3 +13,6 @@ log_level = 2
 warn_on_root = 1
 android.release = 1
 android.archs = arm64-v8a
+
+# Ajoute cette ligne en dehors de la section [app], à la fin du fichier :
+android.sdk_path = $HOME/.buildozer/android/platform/android-sdk
