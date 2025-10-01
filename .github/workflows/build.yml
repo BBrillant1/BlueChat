@@ -30,8 +30,8 @@ jobs:
 
       - name: Install system dependencies
         run: |
-          sudo apt-get update
-          sudo apt-get install -y unzip wget git openjdk-11-jdk python3-pip build-essential
+          apt-get update
+          apt-get install -y unzip wget git openjdk-11-jdk python3-pip build-essential
 
       - name: Install Android SDK, NDK, and platform-tools
         run: |
